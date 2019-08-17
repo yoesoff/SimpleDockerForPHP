@@ -1,0 +1,36 @@
+version: '3.1'
+
+services:
+    doclearn_postgres:
+        image: postgres
+        ports:
+            - '5444:5432'
+        #restart: always
+
+    doclearn_php_fpm:
+        build: ./docker/php-fpm
+        #ports:
+            #- "9004:9000"
+            #- "3004:3001"
+            #- "3004:3000"
+        volumes:
+            - ./public:/var/www
+            #http://geekyplatypus.com/dockerise-your-php-application-with-nginx-and-php7-fpm/  PHP is running in its own environment (container) it doesn't have access to the code. 
+            - ./logs/nginx:/var/log/nginx/
+        links:
+            - doclearn_postgres
+        #restart: always
+
+    doclearn_nginx:
+        build: ./docker/nginx
+        ports:
+            - "84:80"
+        depends_on:
+            - doclearn_php_fpm
+            - doclearn_postgres
+        links:
+            - doclearn_php_fpm
+        volumes:
+            - ./public:/var/www
+            - ./logs/nginx:/var/log/nginx/
+        #restart: always
